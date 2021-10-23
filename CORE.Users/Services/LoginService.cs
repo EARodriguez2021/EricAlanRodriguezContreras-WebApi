@@ -7,6 +7,7 @@ using System.Data;
 using System.Text;
 using CORE.Users.Interfaces;
 using CORE.Users.Models;
+using System.Data.SqlClient;
 
 namespace CORE.Users.Services
 {
@@ -14,7 +15,7 @@ namespace CORE.Users.Services
     {
         private bool disposedValue;
         private IConnectionDB<LoginModel> _conn;
-        private List<Tuple<string, object, int>> _parameters = new List<Tuple<string, object, int>>();
+        Dapper.DynamicParameters _parameters = new Dapper.DynamicParameters();
         public LoginService(IConnectionDB<LoginModel> conn)
         {
             _conn = conn;
@@ -25,31 +26,33 @@ namespace CORE.Users.Services
             try
             {
                 LoginModel model = new LoginModel();
-                _parameters.Add(new Tuple<string, object, int>("@p_login_json", JsonConvert.SerializeObject(user), 12));
+                user.Password = Tools.SHA2.GetSHA256(user.Password); //Encripción en SHA256
+                _parameters.Add("@p_login_json", JsonConvert.SerializeObject(user), DbType.String, ParameterDirection.Input);
                 _conn.PrepararProcedimiento("dbo.[USERS.Login]", _parameters);
-
-                DataTableReader DTRResultados = _conn.EjecutarTableReader();
-                while (DTRResultados.Read())
+                var Json = (string)_conn.QueryFirstOrDefaultDapper(Connection.Models.TipoDato.Cadena);
+                if (Json != string.Empty)
                 {
-                    var Json = DTRResultados["Usuario"].ToString();
-                    if (Json != string.Empty)
+                    JArray arr = JArray.Parse(Json);
+                    foreach (JObject jsonOperaciones in arr.Children<JObject>())
                     {
-                        JArray arr = JArray.Parse(Json);
-                        foreach (JObject jsonOperaciones in arr.Children<JObject>())
+                        model = new LoginModel()
                         {
-                            //user = JsonConvert.DeserializeObject<User>(jsonOperaciones);
-                            model = new LoginModel()
-                            {
-                                Id = Convert.ToInt32(jsonOperaciones["Id"].ToString()),
-                                Name = jsonOperaciones["Name"].ToString(),
-                                LastName = jsonOperaciones["LastName"].ToString(),
-                            };
+                            Id = Convert.ToInt32(jsonOperaciones["Id"].ToString()),
+                            Name = jsonOperaciones["Name"].ToString(),
+                            LastName = jsonOperaciones["LastName"].ToString(),
+                        };
 
-                        }
                     }
                 }
-
                 return model;
+            }
+            catch (SqlException sqlEx)
+            {
+                throw new Exception(sqlEx.Message);
+            }
+            catch (MySql.Data.MySqlClient.MySqlException mysqlEx)
+            {
+                throw new Exception(mysqlEx.Message);
             }
             catch (Exception ex)
             {
@@ -57,7 +60,7 @@ namespace CORE.Users.Services
             }
             finally
             {
-                _parameters.Clear();
+                _conn.Dispose();
             }
         }
 
