@@ -9,22 +9,23 @@ using CORE.Users.Interfaces;
 using CORE.Users.Models;
 using System.Data.SqlClient;
 using Dapper;
+using CORE.Users.Tools;
 
 namespace CORE.Users.Services
 {
-    public class UserService: IUser,IDisposable
+    public class UserService : IUser, IDisposable
     {
         #region Dapper
-#if false
+#if true
         private bool disposedValue;
         private IConnectionDB<UserModel> _conn;
+        private string _connectionString = String.Empty;
         private List<Tuple<string, object, int>> _parameters = new List<Tuple<string, object, int>>();
-        string _connectionString = string.Empty;
 
         public UserService(IConnectionDB<UserModel> conn, string connectionString)
         {
             _conn = conn;
-            this._connectionString = connectionString;
+            this._connectionString = EncryptTool.Decrypt(connectionString);
         }
 
         public UserService(IConnectionDB<UserModel> conn)
@@ -172,10 +173,15 @@ namespace CORE.Users.Services
             }
         }
 #endif
-        #endregion
+#endregion
+
+#region Metodo tradicional
+
+#if false
 
         private bool disposedValue;
         private IConnectionDB<UserModel> _conn;
+        private string _connectionString;
         private List<Tuple<string, object, int>> _parameters = new List<Tuple<string, object, int>>();
 
         public UserService(IConnectionDB<UserModel> conn)
@@ -183,13 +189,23 @@ namespace CORE.Users.Services
             _conn = conn;
         }
 
+        public UserService(IConnectionDB<UserModel> conn, string connectionString)
+        {
+            _conn = conn;
+            _connectionString = EncryptTool.Decrypt(connectionString);
+        }
+
         public List<Models.UserModel> GetUsers()
         {
             try
             {
                 List<UserModel> list = new List<UserModel>();
+                using (var connection = new SqlConnection(this._connectionString))
+                {
 
-                _conn.PrepararProcedimiento("dbo.[USERS.Get_All]", _parameters);
+                }
+
+                    _conn.PrepararProcedimiento("dbo.[USERS.Get_All]", _parameters);
 
                 DataTableReader DTRResultados = _conn.EjecutarTableReader();
                 while (DTRResultados.Read())
@@ -331,7 +347,10 @@ namespace CORE.Users.Services
             }
         }
 
-        #region Dispose
+#endif
+#endregion
+
+#region Dispose
 
         protected virtual void Dispose(bool disposing)
         {
