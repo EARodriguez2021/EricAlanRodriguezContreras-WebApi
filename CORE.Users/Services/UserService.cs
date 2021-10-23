@@ -17,22 +17,21 @@ namespace CORE.Users.Services
     {
         #region Dapper
 #if true
+
         private bool disposedValue;
         private IConnectionDB<UserModel> _conn;
-        private string _connectionString = String.Empty;
         private List<Tuple<string, object, int>> _parameters = new List<Tuple<string, object, int>>();
-
-        public UserService(IConnectionDB<UserModel> conn, string connectionString)
-        {
-            _conn = conn;
-            this._connectionString = EncryptTool.Decrypt(connectionString);
-        }
-
+        string _connectionString = string.Empty;
         public UserService(IConnectionDB<UserModel> conn)
         {
             _conn = conn;
         }
 
+        public UserService(IConnectionDB<UserModel> conn, string connectionString)
+        {
+            _conn = conn;
+            _connectionString = EncryptTool.Decrypt(connectionString);
+        }
         public List<Models.UserModel> GetUsers()
         {
             List<UserModel> list = new List<UserModel>();
@@ -88,7 +87,7 @@ namespace CORE.Users.Services
             {
                 using (var connection = new SqlConnection(this._connectionString))
                 {
-                    UsuarioResp = (Models.UserModel)connection.Query<UserModel>("dbo.[USERS.Get_Id]", new { Id = ID }, commandType: CommandType.StoredProcedure);
+                    UsuarioResp = (Models.UserModel)connection.QueryFirst<UserModel>("dbo.[USERS.Get_Id]", new { Id = ID }, commandType: CommandType.StoredProcedure);
                 }
                 return UsuarioResp;
             }
@@ -138,7 +137,7 @@ namespace CORE.Users.Services
                 bool reply = false;
                 using (var connection = new SqlConnection(this._connectionString))
                 {
-                    var affectedRows = connection.Execute("dbo.[USERS.Update]", new { p_user_json = JsonConvert.SerializeObject(model) }, commandType: CommandType.StoredProcedure);
+                    var affectedRows = connection.QueryFirstOrDefault<long>("dbo.[USERS.Update]", new { p_user_json = JsonConvert.SerializeObject(model) }, commandType: CommandType.StoredProcedure);
 
                     reply = affectedRows < 1 ? false : true;
                 }
@@ -173,9 +172,9 @@ namespace CORE.Users.Services
             }
         }
 #endif
-#endregion
+        #endregion
 
-#region Metodo tradicional
+        #region Metodo tradicional
 
 #if false
 
@@ -348,9 +347,9 @@ namespace CORE.Users.Services
         }
 
 #endif
-#endregion
+        #endregion
 
-#region Dispose
+        #region Dispose
 
         protected virtual void Dispose(bool disposing)
         {
