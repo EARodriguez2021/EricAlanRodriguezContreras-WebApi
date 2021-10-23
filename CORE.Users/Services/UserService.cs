@@ -22,15 +22,16 @@ namespace CORE.Users.Services
         private IConnectionDB<UserModel> _conn;
         private List<Tuple<string, object, int>> _parameters = new List<Tuple<string, object, int>>();
         string _connectionString = string.Empty;
-        public UserService(IConnectionDB<UserModel> conn)
-        {
-            _conn = conn;
-        }
-
+        
         public UserService(IConnectionDB<UserModel> conn, string connectionString)
         {
             _conn = conn;
             _connectionString = EncryptTool.Decrypt(connectionString);
+        }
+
+        public UserService(IConnectionDB<UserModel> conn)
+        {
+            _conn = conn;
         }
         public List<Models.UserModel> GetUsers()
         {
@@ -38,7 +39,7 @@ namespace CORE.Users.Services
 
             try
             {
-                using (var connection = new SqlConnection(this._connectionString))
+                using (var connection = new SqlConnection(_connectionString))
                 {
                     var Json = connection.QueryFirstOrDefault<string>("dbo.[USERS.Get_All]", null, commandType: CommandType.StoredProcedure);
 
