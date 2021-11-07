@@ -10,6 +10,9 @@ using CORE.Users.Models;
 using System.Data.SqlClient;
 using Dapper;
 using CORE.Users.Tools;
+using Microsoft.AspNetCore.Http;
+using System.Net;
+using Amazon.Runtime.Internal;
 
 namespace CORE.Users.Services
 {
@@ -26,7 +29,7 @@ namespace CORE.Users.Services
         public UserService(IConnectionDB<UserModel> conn, string connectionString)
         {
             _conn = conn;
-            _connectionString = EncryptTool.Decrypt(connectionString);
+            _connectionString = "Server=tcp:mtwdmsql.database.windows.net,1433;Initial Catalog=CORE3_CRUD;Persist Security Info=False;User ID=mtwdm;Password=admin123#;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
         }
 
         public UserService(IConnectionDB<UserModel> conn)
@@ -86,7 +89,7 @@ namespace CORE.Users.Services
             Models.UserModel UsuarioResp = null;
             try
             {
-                using (var connection = new SqlConnection(this._connectionString))
+                using (var connection = new SqlConnection(_connectionString))
                 {
                     UsuarioResp = (Models.UserModel)connection.QueryFirst<UserModel>("dbo.[USERS.Get_Id]", new { Id = ID }, commandType: CommandType.StoredProcedure);
                 }
@@ -115,7 +118,7 @@ namespace CORE.Users.Services
 
             try
             {
-                using (var connection = new SqlConnection(this._connectionString))
+                using (var connection = new SqlConnection(_connectionString))
                 {
                     id = connection.QueryFirstOrDefault<long>("dbo.[USERS.Set]", new { p_user_json = JsonConvert.SerializeObject(model) }, commandType: CommandType.StoredProcedure);
                 }
@@ -131,12 +134,12 @@ namespace CORE.Users.Services
                 _parameters.Clear();
             }
         }
-        public bool UpdateUser(Models.UserModel model)
+        public bool UpdateUser(UserModel model)
         {
             try
             {
                 bool reply = false;
-                using (var connection = new SqlConnection(this._connectionString))
+                using (var connection = new SqlConnection(_connectionString))
                 {
                     var affectedRows = connection.QueryFirstOrDefault<long>("dbo.[USERS.Update]", new { p_user_json = JsonConvert.SerializeObject(model) }, commandType: CommandType.StoredProcedure);
 
@@ -158,7 +161,7 @@ namespace CORE.Users.Services
         {
             try
             {
-                using (var connection = new SqlConnection(this._connectionString))
+                using (var connection = new SqlConnection(_connectionString))
                 {
                     var affectedRows = connection.Execute("dbo.[USERS.Delete]", new { Id = ID }, commandType: CommandType.StoredProcedure);
                 }

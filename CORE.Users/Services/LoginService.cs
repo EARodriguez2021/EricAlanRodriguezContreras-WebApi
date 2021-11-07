@@ -8,6 +8,7 @@ using System.Text;
 using CORE.Users.Interfaces;
 using CORE.Users.Models;
 using System.Data.SqlClient;
+using CORE.Users.Tools;
 
 namespace CORE.Users.Services
 {
@@ -16,17 +17,25 @@ namespace CORE.Users.Services
         private bool disposedValue;
         private IConnectionDB<LoginModel> _conn;
         Dapper.DynamicParameters _parameters = new Dapper.DynamicParameters();
+        string _connectionString = string.Empty;
+
+        public LoginService(IConnectionDB<LoginModel> conn, string connectionString)
+        {
+            _conn = conn;
+            _connectionString = "Server=tcp:mtwdmsql.database.windows.net,1433;Initial Catalog=CORE3_CRUD;Persist Security Info=False;User ID=mtwdm;Password=admin123#;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+        }
+
         public LoginService(IConnectionDB<LoginModel> conn)
         {
             _conn = conn;
         }
 
-        public Models.LoginModel Login(Models.LoginMinModel user)
+        public LoginModel Login(LoginMinModel user)
         {
             try
             {
                 LoginModel model = new LoginModel();
-                user.Password = Tools.SHA2.GetSHA256(user.Password); //Encripción en SHA256
+                user.Password = SHA2.GetSHA256(user.Password); //Encripción en SHA256
                 _parameters.Add("@p_login_json", JsonConvert.SerializeObject(user), DbType.String, ParameterDirection.Input);
                 _conn.PrepararProcedimiento("dbo.[USERS.Login]", _parameters);
                 var Json = (string)_conn.QueryFirstOrDefaultDapper(Connection.Models.TipoDato.Cadena);

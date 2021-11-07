@@ -82,7 +82,7 @@ namespace WebAPI
             });
 
             //Se agregan estas líneas:
-            services.AddTransient((ServiceProvider) => BridgeDBConnection<UserModel>.Create(Configuration.GetConnectionString("LocalServer"), CORE.Connection.Models.DbEnum.Sql));
+            services.AddTransient((ServiceProvider) => BridgeDBConnection<UserModel>.Create(Configuration.GetConnectionString("CloudServer"), CORE.Connection.Models.DbEnum.Sql));
             services.AddTransient((ServiceProvider) => BridgeDBConnection<LoginModel>.Create(Configuration.GetConnectionString("CloudServer"), CORE.Connection.Models.DbEnum.Sql));
 
             services.AddScoped<IUser, UserService>();

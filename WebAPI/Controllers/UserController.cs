@@ -1,8 +1,13 @@
 ﻿using CORE.Users.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using CORE.Users.Models;
+using CORE.Users.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebAPI.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -17,10 +22,10 @@ namespace WebAPI.Controllers
         ///https://localhost:5001/api/User/GetUsers
         [HttpGet]
         [Route("[action]")]
-        public IEnumerable<CORE.Users.Models.UserModel> GetUsers()
+        public IEnumerable<UserModel> GetUsers()
         {
-            List<CORE.Users.Models.UserModel> model = new List<CORE.Users.Models.UserModel>();
-            using (IUser User = CORE.Users.Services.FactorizerService.Inicializar(CORE.Users.Models.EServer.LOCAL))
+            List<UserModel> model = new List<UserModel>();
+            using (IUser User = FactorizerService.Inicializar(EServer.CLOUD))
             {
                 model = User.GetUsers();
             }
@@ -36,8 +41,8 @@ namespace WebAPI.Controllers
             if (ID == 0)
                 return BadRequest("Ingrese un ID válido");
 
-            CORE.Users.Models.UserModel model = new CORE.Users.Models.UserModel();
-            using (IUser User = CORE.Users.Services.FactorizerService.Inicializar(CORE.Users.Models.EServer.LOCAL))
+            UserModel model = new UserModel();
+            using (IUser User = FactorizerService.Inicializar(EServer.CLOUD))
             {
                 model = User.GetUser(ID);
             }
@@ -48,13 +53,13 @@ namespace WebAPI.Controllers
         //https://localhost:5001/api/User/AddUser
         [HttpPost]
         [Route("[action]")]
-        public ActionResult AddUser(CORE.Users.Models.UserModel user)
+        public ActionResult AddUser(UserModel user)
         {
             if (user == null)
                 return BadRequest("Ingrese información de usuario");
 
             long model = 0;
-            using (IUser User = CORE.Users.Services.FactorizerService.Inicializar(CORE.Users.Models.EServer.LOCAL))
+            using (IUser User = FactorizerService.Inicializar(EServer.CLOUD))
             {
                 model = User.AddUser(user);
             }
@@ -65,13 +70,13 @@ namespace WebAPI.Controllers
         //https://localhost:5001/api/User/UpdateUser
         [HttpPost]
         [Route("[action]")]
-        public ActionResult UpdateUser(CORE.Users.Models.UserModel user)
+        public ActionResult UpdateUser(UserModel user)
         {
             if (user.Identificador == 0)
                 return BadRequest("Ingrese un ID válido");
 
             bool model = false;
-            using (IUser User = CORE.Users.Services.FactorizerService.Inicializar(CORE.Users.Models.EServer.LOCAL))
+            using (IUser User = FactorizerService.Inicializar(EServer.CLOUD))
             {
                 model = User.UpdateUser(user);
             }
@@ -87,7 +92,7 @@ namespace WebAPI.Controllers
             if (ID == 0)
                 return BadRequest("Ingrese un ID válido");
 
-            using (IUser User = CORE.Users.Services.FactorizerService.Inicializar(CORE.Users.Models.EServer.LOCAL))
+            using (IUser User = FactorizerService.Inicializar(EServer.CLOUD))
             {
                 User.DeleteUser(ID);
             }

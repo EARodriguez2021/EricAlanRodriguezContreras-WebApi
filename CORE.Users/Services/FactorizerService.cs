@@ -18,7 +18,7 @@ namespace CORE.Users.Services
                 EServer.UDEFINED => throw new NullReferenceException(),
                 // Necesitamos usar la sobrecarga del segundo constructor para que funcione dapper, de otra forma siempre pasa en el primer constructor
                 EServer.LOCAL => new UserService(BridgeDBConnection<UserModel>.Create(ConnectionStrings.LocalServer, CORE.Connection.Models.DbEnum.Sql), ConnectionStrings.LocalServer),
-                EServer.CLOUD => new UserService(BridgeDBConnection<UserModel>.Create(ConnectionStrings.CloudServer, CORE.Connection.Models.DbEnum.Sql)),
+                EServer.CLOUD => new UserService(BridgeDBConnection<UserModel>.Create(ConnectionStrings.CloudServer, CORE.Connection.Models.DbEnum.Sql), ConnectionStrings.CloudServer),
                 _ => throw new NullReferenceException(),
             };
 
@@ -29,8 +29,8 @@ namespace CORE.Users.Services
             return typeServer switch
             {
                 EServer.UDEFINED => throw new NullReferenceException(),
-                EServer.LOCAL => new LoginService(BridgeDBConnection<LoginModel>.Create(ConnectionStrings.LocalServer, CORE.Connection.Models.DbEnum.Sql)),
-                EServer.CLOUD => new LoginService(BridgeDBConnection<LoginModel>.Create(ConnectionStrings.CloudServer, CORE.Connection.Models.DbEnum.Sql)),
+                EServer.LOCAL => new LoginService(BridgeDBConnection<LoginModel>.Create(ConnectionStrings.LocalServer, CORE.Connection.Models.DbEnum.Sql), ConnectionStrings.LocalServer),
+                EServer.CLOUD => new LoginService(BridgeDBConnection<LoginModel>.Create(ConnectionStrings.CloudServer, CORE.Connection.Models.DbEnum.Sql), ConnectionStrings.CloudServer),
                 _ => throw new NullReferenceException(),
             };
 
